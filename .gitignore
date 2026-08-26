@@ -1,0 +1,10 @@
+# Ігноруємо всю папку data...
+data/*
+
+# ...але робимо виняток для файлу .gitkeep
+!data/.gitkeep
+
+# System & Python cache
+__pycache__/
+*.pyc
+.vscode/
