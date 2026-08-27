@@ -1,3 +1,4 @@
+import difflib
 from src.storage import save_data, load_data
 from src.handlers import (
     parse_input, 
@@ -10,10 +11,23 @@ from src.handlers import (
     birthdays
 )
 
+# Список усіх команд для розумних автопідказок
+COMMANDS = [
+    "hello", "add", "change", "phone", "all", 
+    "add-birthday", "show-birthday", "birthdays", 
+    "close", "exit"
+]
+
+
+def suggest_command(user_command):
+    """Шукає найближчу за написанням команду при помилці вводу."""
+    matches = difflib.get_close_matches(user_command, COMMANDS, n=1, cutoff=0.5)
+    return matches[0] if matches else None
+
 
 def main():
-    # Завантажуємо стан адресної книги з файлу при запуску
-    book = load_data()
+    # Завантажуємо стан адресної книги та нотаток з файлів
+    book, notebook = load_data()
     print("Welcome to the assistant bot!")
 
     while True:
@@ -24,8 +38,8 @@ def main():
             continue
 
         if command in ["close", "exit"]:
-            # Зберігаємо стан адресної книги у файл перед виходом
-            save_data(book)
+            # Зберігаємо стан перед виходом
+            save_data(book, notebook)
             print("Good bye!")
             break
 
@@ -54,7 +68,12 @@ def main():
             print(birthdays(args, book))
 
         else:
-            print("Invalid command.")
+            # Інтелектуальний аналіз: пропонуємо схожу команду
+            closest = suggest_command(command)
+            if closest:
+                print(f"Invalid command. Did you mean '{closest}'?")
+            else:
+                print("Invalid command.")
 
 
 if __name__ == "__main__":
