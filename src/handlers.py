@@ -1,7 +1,8 @@
 from src.decorators import input_error
 from src.address_book import AddressBook, Record
-from src.note_book import NoteBook  # Додати
-from src.models import Note          # Додати 
+from src.note_book import NoteBook
+from src.models import Note
+
 
 def parse_input(user_input):
     """Розбирає введений рядок на команду та аргументи."""
@@ -11,6 +12,7 @@ def parse_input(user_input):
     cmd = parts[0].strip().lower()
     args = parts[1:]
     return cmd, args
+
 
 # --- ХЕНДЛЕРИ КОНТАКТІВ ---
 
@@ -32,6 +34,7 @@ def add_contact(args, book: AddressBook):
         record.add_phone(phone)
     return message
 
+
 @input_error
 def change_contact(args, book: AddressBook):
     """Змінює старий телефон контакту на новий."""
@@ -43,6 +46,7 @@ def change_contact(args, book: AddressBook):
         raise KeyError
     record.edit_phone(old_phone, new_phone)
     return "Contact updated."
+
 
 @input_error
 def show_phone(args, book: AddressBook):
@@ -57,12 +61,14 @@ def show_phone(args, book: AddressBook):
         return f"No phones saved for {name}."
     return f"{record.name.value}: {'; '.join(p.value for p in record.phones)}"
 
+
 @input_error
 def show_all(book: AddressBook):
     """Виводить усі контакти в адресній книзі."""
     if not book.data:
         return "No contacts saved."
     return "\n".join(str(record) for record in book.data.values())
+
 
 @input_error
 def add_birthday(args, book: AddressBook):
@@ -75,6 +81,7 @@ def add_birthday(args, book: AddressBook):
         raise KeyError
     record.add_birthday(birthday_str)
     return "Birthday added."
+
 
 @input_error
 def show_birthday(args, book: AddressBook):
@@ -89,15 +96,24 @@ def show_birthday(args, book: AddressBook):
         return f"No birthday set for {name}."
     return f"{record.name.value}'s birthday: {record.birthday}"
 
+
 @input_error
 def birthdays(args, book: AddressBook):
-    """Показує дні народження на вказану кількість днів (за замовчуванням 7)."""
-    days = int(args[0]) if args else 7
-    upcoming = book.get_upcoming_birthdays(days)
+    """Показує дні народження на найближчі N днів (за замовчуванням 7)."""
+    days = 7
+    if args:
+        if not args[0].isdigit():
+            raise ValueError("Days must be a positive integer.")
+        days = int(args[0])
+
+    upcoming = book.get_upcoming_birthdays(days=days)
     if not upcoming:
         return f"No upcoming birthdays in the next {days} days."
-    
-    return "\n".join(f"{item['name']}: {item['congratulation_date']}" for item in upcoming)
+
+    result = []
+    for item in upcoming:
+        result.append(f"{item['name']}: {item['congratulation_date']}")
+    return "\n".join(result)
 
 
 @input_error
@@ -105,38 +121,51 @@ def add_email(args, book: AddressBook):
     """Додає email до контакту."""
     if len(args) < 2:
         raise IndexError
-    name, email = args[0], args[1]
+    name, email_str, *_ = args
     record = book.find(name)
     if record is None:
         raise KeyError
-    record.add_email(email)
+    record.add_email(email_str)
     return "Email added."
 
 
 @input_error
-def add_address(args, book: AddressBook):
-    """Додає адресу до контакту."""
+def edit_email(args, book: AddressBook):
+    """Змінює email контакту."""
     if len(args) < 2:
         raise IndexError
-    name = args[0]
-    address = " ".join(args[1:])
+    name, email_str, *_ = args
     record = book.find(name)
     if record is None:
         raise KeyError
-    record.add_address(address)
+    record.edit_email(email_str)
+    return "Email updated."
+
+
+@input_error
+def add_address(args, book: AddressBook):
+    """Додає або оновлює адресу контакту."""
+    if len(args) < 2:
+        raise IndexError
+    name = args[0]
+    address_str = " ".join(args[1:])
+    record = book.find(name)
+    if record is None:
+        raise KeyError
+    record.add_address(address_str)
     return "Address added."
 
 
 @input_error
 def search_contacts(args, book: AddressBook):
-    """Шукає контакти за підрядком у імені чи телефоні."""
+    """Шукає контакти за підрядком у імені, телефоні, email або адресі."""
     if not args:
         raise IndexError
     query = " ".join(args)
     results = book.search(query)
     if not results:
-        return "No matches found."
-    return "\n".join(str(r) for r in results)
+        return "No contacts found."
+    return "\n".join(str(record) for record in results)
 
 
 # --- ХЕНДЛЕРИ НОТАТОК ---

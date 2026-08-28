@@ -1,7 +1,7 @@
 # Модуль для роботи з нотатками та тегами
 from collections import UserDict
 from typing import List, Optional
-from src.models import Note 
+from src.models import Note
 
 
 class NoteBook(UserDict):
@@ -9,7 +9,7 @@ class NoteBook(UserDict):
 
     def add_note(self, note: Note) -> None:
         # Ключем є текст нотатки
-        self.data[note.content] = note 
+        self.data[note.content] = note
 
     def find_note(self, content: str) -> Optional[Note]:
         return self.data.get(content)
@@ -24,7 +24,7 @@ class NoteBook(UserDict):
         query = query.strip().lower()
         if not query:
             return []
-        
+
         results = []
         for note in self.data.values():
             if query in note.content.lower():
@@ -35,7 +35,7 @@ class NoteBook(UserDict):
         tag = tag.strip().lower()
         if not tag:
             return []
-        
+
         results = []
         for note in self.data.values():
             # Приведення всіх збережених тегів до нижнього регістру
