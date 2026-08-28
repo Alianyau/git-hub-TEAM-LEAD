@@ -1,5 +1,7 @@
 from src.decorators import input_error
 from src.address_book import AddressBook, Record
+from src.note_book import NoteBook  # Додати
+from src.models import Note          # Додати 
 
 def parse_input(user_input):
     """Розбирає введений рядок на команду та аргументи."""
@@ -9,6 +11,8 @@ def parse_input(user_input):
     cmd = parts[0].strip().lower()
     args = parts[1:]
     return cmd, args
+
+# --- ХЕНДЛЕРИ КОНТАКТІВ ---
 
 @input_error
 def add_contact(args, book: AddressBook):
@@ -31,7 +35,7 @@ def add_contact(args, book: AddressBook):
 @input_error
 def change_contact(args, book: AddressBook):
     """Змінює старий телефон контакту на новий."""
-    if len(args) < 2:
+    if len(args) < 3:
         raise IndexError
     name, old_phone, new_phone, *_ = args
     record = book.find(name)
@@ -87,12 +91,107 @@ def show_birthday(args, book: AddressBook):
 
 @input_error
 def birthdays(args, book: AddressBook):
-    """Показує дні народження на найближчий тиждень."""
-    upcoming = book.get_upcoming_birthdays()
+    """Показує дні народження на вказану кількість днів (за замовчуванням 7)."""
+    days = int(args[0]) if args else 7
+    upcoming = book.get_upcoming_birthdays(days)
     if not upcoming:
-        return "No upcoming birthdays in the next week."
+        return f"No upcoming birthdays in the next {days} days."
     
-    result = []
-    for item in upcoming:
-        result.append(f"{item['name']}: {item['congratulation_date']}")
-    return "\n".join(result)
+    return "\n".join(f"{item['name']}: {item['congratulation_date']}" for item in upcoming)
+
+
+@input_error
+def add_email(args, book: AddressBook):
+    """Додає email до контакту."""
+    if len(args) < 2:
+        raise IndexError
+    name, email = args[0], args[1]
+    record = book.find(name)
+    if record is None:
+        raise KeyError
+    record.add_email(email)
+    return "Email added."
+
+
+@input_error
+def add_address(args, book: AddressBook):
+    """Додає адресу до контакту."""
+    if len(args) < 2:
+        raise IndexError
+    name = args[0]
+    address = " ".join(args[1:])
+    record = book.find(name)
+    if record is None:
+        raise KeyError
+    record.add_address(address)
+    return "Address added."
+
+
+@input_error
+def search_contacts(args, book: AddressBook):
+    """Шукає контакти за підрядком у імені чи телефоні."""
+    if not args:
+        raise IndexError
+    query = " ".join(args)
+    results = book.search(query)
+    if not results:
+        return "No matches found."
+    return "\n".join(str(r) for r in results)
+
+
+# --- ХЕНДЛЕРИ НОТАТОК ---
+
+@input_error
+def add_note(args, notebook: NoteBook):
+    """Створює нову нотатку."""
+    if not args:
+        raise IndexError
+    content = " ".join(args)
+    notebook.add_note(Note(content))
+    return "Note added."
+
+
+@input_error
+def add_tag(args, notebook: NoteBook):
+    """Додає тег до нотатки. Формат: <текст_нотатки> <тег>"""
+    if len(args) < 2:
+        raise IndexError
+    tag = args[-1]
+    content = " ".join(args[:-1])
+    note = notebook.find_note(content)
+    if not note:
+        raise KeyError
+    note.add_tag(tag)
+    return f"Tag '{tag}' added to note."
+
+
+@input_error
+def search_notes(args, notebook: NoteBook):
+    """Шукає нотатки за текстом."""
+    if not args:
+        raise IndexError
+    query = " ".join(args)
+    results = notebook.search_by_text(query)
+    if not results:
+        return "No notes found."
+    return "\n---\n".join(str(n) for n in results)
+
+
+@input_error
+def search_by_tag(args, notebook: NoteBook):
+    """Шукає нотатки за тегом."""
+    if not args:
+        raise IndexError
+    tag = args[0]
+    results = notebook.search_by_tag(tag)
+    if not results:
+        return f"No notes found with tag '{tag}'."
+    return "\n---\n".join(str(n) for n in results)
+
+
+@input_error
+def show_all_notes(notebook: NoteBook):
+    """Виводить усі збережені нотатки."""
+    if not notebook.data:
+        return "No notes saved."
+    return "\n---\n".join(str(note) for note in notebook.data.values())
