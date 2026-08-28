@@ -1,8 +1,7 @@
-from src.decorators import input_error
+from src.decorators import input_error, NoteNotFoundError
 from src.address_book import AddressBook, Record
 from src.note_book import NoteBook
 from src.models import Note
-
 
 def parse_input(user_input):
     """Розбирає введений рядок на команду та аргументи."""
@@ -68,6 +67,18 @@ def show_all(book: AddressBook):
     if not book.data:
         return "No contacts saved."
     return "\n".join(str(record) for record in book.data.values())
+
+
+@input_error
+def delete_contact(args, book: AddressBook):
+    """Видаляє контакт з адресної книги."""
+    if not args:
+        raise IndexError
+    name = args[0]
+    if book.find(name):
+        book.delete(name)
+        return f"Contact '{name}' deleted."
+    raise KeyError
 
 
 @input_error
@@ -224,3 +235,14 @@ def show_all_notes(notebook: NoteBook):
     if not notebook.data:
         return "No notes saved."
     return "\n---\n".join(str(note) for note in notebook.data.values())
+
+
+@input_error
+def delete_note(args, notebook: NoteBook):
+    """Видаляє нотатку за її текстом."""
+    if not args:
+        raise IndexError
+    content = " ".join(args)
+    if notebook.delete_note(content):
+        return "Note deleted."
+    raise NoteNotFoundError

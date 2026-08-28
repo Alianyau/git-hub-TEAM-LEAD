@@ -1,13 +1,17 @@
+import os
 import pickle
 from src.address_book import AddressBook
 
 
 def save_data(book, notebook=None, filename_book="data/addressbook.pkl", filename_note="data/notebook.pkl"):
     """Зберігає об'єкти AddressBook та NoteBook у відповідні файли pickle."""
+    # Автоматично створюємо папку data/, якщо її ще не існує
+    os.makedirs(os.path.dirname(filename_book), exist_ok=True)
     with open(filename_book, "wb") as f:
         pickle.dump(book, f)
 
     if notebook is not None:
+        os.makedirs(os.path.dirname(filename_note), exist_ok=True)
         with open(filename_note, "wb") as f:
             pickle.dump(notebook, f)
 
