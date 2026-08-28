@@ -87,12 +87,66 @@ def show_birthday(args, book: AddressBook):
 
 @input_error
 def birthdays(args, book: AddressBook):
-    """Показує дні народження на найближчий тиждень."""
-    upcoming = book.get_upcoming_birthdays()
+    """Показує дні народження на найближчі N днів (за замовчуванням 7)."""
+    days = 7
+    if args:
+        if not args[0].isdigit():
+            raise ValueError("Days must be a positive integer.")
+        days = int(args[0])
+
+    upcoming = book.get_upcoming_birthdays(days=days)
     if not upcoming:
-        return "No upcoming birthdays in the next week."
-    
+        return f"No upcoming birthdays in the next {days} days."
+
     result = []
     for item in upcoming:
         result.append(f"{item['name']}: {item['congratulation_date']}")
     return "\n".join(result)
+
+@input_error
+def add_email(args, book: AddressBook):
+    """Додає email до контакту."""
+    if len(args) < 2:
+        raise IndexError
+    name, email_str, *_ = args
+    record = book.find(name)
+    if record is None:
+        raise KeyError
+    record.add_email(email_str)
+    return "Email added."
+
+@input_error
+def edit_email(args, book: AddressBook):
+    """Змінює email контакту."""
+    if len(args) < 2:
+        raise IndexError
+    name, email_str, *_ = args
+    record = book.find(name)
+    if record is None:
+        raise KeyError
+    record.edit_email(email_str)
+    return "Email updated."
+
+@input_error
+def add_address(args, book: AddressBook):
+    """Додає або оновлює адресу контакту."""
+    if len(args) < 2:
+        raise IndexError
+    name = args[0]
+    address_str = " ".join(args[1:])
+    record = book.find(name)
+    if record is None:
+        raise KeyError
+    record.add_address(address_str)
+    return "Address added."
+
+@input_error
+def search_contacts(args, book: AddressBook):
+    """Шукає контакти за підрядком у імені, телефоні, email або адресі."""
+    if not args:
+        raise IndexError
+    query = " ".join(args)
+    results = book.search(query)
+    if not results:
+        return "No contacts found."
+    return "\n".join(str(record) for record in results)
