@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from src.decorators import InvalidEmailError, InvalidTagError
 
 
 class Field:
@@ -40,8 +41,8 @@ class Email(Field):
     """Клас для зберігання email з валідацією через regex."""
     def __init__(self, value: str):
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        if not re.match(pattern, value):
-            raise ValueError("Invalid email format.")
+        if not value or not re.match(pattern, value):
+            raise InvalidEmailError("Invalid email format.")
         super().__init__(value)
 
 
@@ -58,6 +59,8 @@ class Note:
 
     def add_tag(self, tag: str):
         """Додає новий тег до нотатки."""
+        if not tag or not tag.strip():
+            raise InvalidTagError("Tag must be a non-empty string.")
         if tag not in self.tags:
             self.tags.append(tag)
 
