@@ -1,20 +1,25 @@
 import difflib
 from src.storage import save_data, load_data
 from src.handlers import (
-    parse_input, 
-    add_contact, 
-    change_contact, 
-    show_phone, 
-    show_all, 
-    add_birthday, 
-    show_birthday, 
-    birthdays
+    parse_input,
+    add_contact,
+    change_contact,
+    show_phone,
+    show_all,
+    add_birthday,
+    show_birthday,
+    birthdays,
+    add_email,
+    edit_email,
+    add_address,
+    search_contacts,
 )
 
 # Список усіх команд для розумних автопідказок
 COMMANDS = [
-    "hello", "add", "change", "phone", "all", 
-    "add-birthday", "show-birthday", "birthdays", 
+    "hello", "add", "change", "phone", "all",
+    "add-birthday", "show-birthday", "birthdays",
+    "add-email", "edit-email", "add-address", "search",
     "close", "exit"
 ]
 
@@ -66,6 +71,18 @@ def main():
 
         elif command == "birthdays":
             print(birthdays(args, book))
+
+        elif command == "add-email":
+            print(add_email(args, book))
+
+        elif command == "edit-email":
+            print(edit_email(args, book))
+
+        elif command == "add-address":
+            print(add_address(args, book))
+
+        elif command == "search":
+            print(search_contacts(args, book))
 
         else:
             # Інтелектуальний аналіз: пропонуємо схожу команду
